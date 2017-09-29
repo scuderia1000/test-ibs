@@ -1,0 +1,41 @@
+{
+  "name": "ibs-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack -d",
+    "dev": "webpack-dev-server --content-base generated/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scuderia1000/test-ibs.git"
+  },
+  "author": "valentin ershov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/scuderia1000/test-ibs/issues"
+  },
+  "homepage": "https://github.com/scuderia1000/test-ibs#readme",
+  "dependencies": {
+    "material-ui": "^0.19.2",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2",
+    "requirejs": "^2.3.5",
+    "rest": "^2.0.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-regenerator": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "install": "^0.10.1",
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.9.1"
+  }
+}
