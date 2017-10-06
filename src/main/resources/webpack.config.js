@@ -41,6 +41,12 @@ module.exports = {
         noInfo: false,
         quiet: false,
         lazy: false,
+        proxy: {
+            '/': {
+                target: 'http://localhost:8080',
+                secure: false
+            }
+        },
         watchOptions: {
             poll: false
         }

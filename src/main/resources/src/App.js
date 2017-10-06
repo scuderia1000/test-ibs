@@ -2,41 +2,14 @@ import React from "react";
 import axios from 'axios';
 import TextField from 'material-ui/TextField';
 import RaisedButton from 'material-ui/RaisedButton';
-import {
-    Table,
-    TableHeaderColumn,
-    TableRow,
-    TableHeader,
-    TableRowColumn,
-    TableBody
-} from 'material-ui/Table';
-import EditTable from 'material-ui-table-edit';
 import ReactDataGrid from 'react-data-grid';
-import {Editors, Formatters, Toolbar} from 'react-data-grid-addons';
+import {Editors, Toolbar} from 'react-data-grid-addons';
+import Paper from "material-ui/Paper";
 import Snackbar from "material-ui/Snackbar";
-import DropDownMenu from 'material-ui/DropDownMenu';
-import MenuItem from 'material-ui/MenuItem';
 
-const {AutoComplete: AutoCompleteEditor, DropDownEditor} = Editors;
-const {DropDownFormatter} = Formatters;
-
-const TICKETS = [
-    {id: 0, number: 10, name: 'Joe', toWhom: {1: 'UPDATED'}, fromWhom: 45, status: 'created'},
-    {id: 1, number: 20, name: 'Barack', toWhom: {0: 'CREATED'}, fromWhom: 54, status: 'created'},
-    {id: 2, number: 30, name: 'Crystal', toWhom: {1: 'UPDATED'}, fromWhom: 34, status: 'created'},
-    {id: 3, number: 40, name: 'James', toWhom: {1: 'UPDATED'}, fromWhom: 33, status: 'created'}
-];
-
-const headers = [
-    {value: 'Number', type: 'TextField', width: 200},
-    {value: 'Name', type: 'TextField', width: 200},
-    {value: 'To Whom', type: 'Menu', width: 200},
-    {value: 'From Whom', type: 'DropDownMenu', width: 200},
-    {value: 'Status', type: 'TextField', width: 200},
-];
+const {AutoComplete: AutoCompleteEditor} = Editors;
 
 let numberer = 0;
-
 
 class App extends React.Component {
     constructor(props) {
@@ -45,31 +18,31 @@ class App extends React.Component {
             tickets: [
                 {
                     number: ++numberer,
-                    name: 'Joe',
-                    toWhom: 'WILL_SMITH',
-                    fromWhom: 'NAUMOVA_ANNA',
-                    status: 'CREATED'
+                    name: 'Доставка',
+                    toWhom: 'Вилл Смит',
+                    fromWhom: 'Озеров Иван Христофорович',
+                    status: 'Создана'
                 },
                 {
                     number: ++numberer,
-                    name: 'Barack',
-                    toWhom: 'WILL_SMITH',
-                    fromWhom: 'NAUMOVA_ANNA',
-                    status: 'CREATED'
+                    name: 'Ремонт',
+                    toWhom: 'Дэвид Грол',
+                    fromWhom: 'Недолин Мартын Акимович',
+                    status: 'В работе'
                 },
                 {
                     number: ++numberer,
-                    name: 'Crystal',
-                    toWhom: 'WILL_SMITH',
-                    fromWhom: 'NAUMOVA_ANNA',
-                    status: 'CREATED'
+                    name: 'Монтаж',
+                    toWhom: 'Стив Джобс',
+                    fromWhom: 'Никитин Андрей Афанасьевич',
+                    status: 'Подтверждена'
                 },
                 {
                     number: ++numberer,
-                    name: 'James',
-                    toWhom: 'WILL_SMITH',
-                    fromWhom: 'NAUMOVA_ANNA',
-                    status: 'CREATED'
+                    name: 'Перемещение',
+                    toWhom: 'Билл Гейтс',
+                    fromWhom: 'Мосолов Александр Николаевич',
+                    status: 'Обновлена'
                 }
             ],
             selectedTicket: {},
@@ -114,11 +87,6 @@ class App extends React.Component {
         });
     };
 
-    handleComboChange = (event, index, obj) => {
-        debugger
-        console.log(obj.text);
-    };
-
     handleCellClick = (rowNumber, data, event) => {
         if (event.key === 'delete') return;
         const ticketId = data.number;
@@ -135,6 +103,7 @@ class App extends React.Component {
     };
 
     handleSave = () => {
+        const {openSnack} = this.state;
         const newRow = {
             number: ++numberer,
             name: '',
@@ -148,41 +117,48 @@ class App extends React.Component {
             tickets: tickets
         });
 
-        axios.post(
-            'api/create', {
-                firstName: this.state.firstName,
-                lastName: this.state.lastName
-            }).then((response) => {
-
-        })
-            .catch((error) => {
-                console.log(error);
-            });
+        axios.post('api/create')
+            .then((response) => {
+                this.setState({
+                    openSnack: !openSnack,
+                    text: 'Добавлена навая заявка'
+                })
+            }).catch((error) => {
+            console.log(error);
+        });
 
     };
 
     handleDelete = (id) => {
-        let ticketToDelete = {};
+        const {openSnack} = this.state;
         let tickets = this.state.tickets.slice();
-        const ticket = this.state.tickets.forEach((item, index) => {
+        this.state.tickets.forEach((item, index) => {
             if (item.number == id) {
-                ticketToDelete = item;
                 tickets.splice(index, 1);
             }
         });
-        this.setState({
-            tickets: tickets
-        });
+        if (this.state.selectedTicket.number && this.state.selectedTicket.number == id) {
+            this.setState({
+                tickets: tickets,
+                selectedTicket: {}
+            });
+        } else {
+            this.setState({
+                tickets: tickets
+            });
+        }
 
         axios.get(
             'api/delete',
             {params: {id: id}}
         ).then((response) => {
-
-        })
-            .catch((error) => {
-                console.log(error);
-            });
+            this.setState({
+                openSnack: !openSnack,
+                text: 'Заявка номер ' + id + ' удалена'
+            })
+        }).catch((error) => {
+            console.log(error);
+        });
 
     };
 
@@ -211,36 +187,13 @@ class App extends React.Component {
     };
 
     handleClear = () => {
-
         this.setState({
             selectedTicket: {}
         });
     };
 
     render() {
-        const {number = '', name = '', toWhom = [], fromWhom = [], status = [], tickets, openSnack, selectedTicket} = this.state;
-
-        const toWhomValue = selectedTicket.toWhom ? selectedTicket.toWhom : '';
-        const fromWhomValue = selectedTicket.fromWhom ? selectedTicket.fromWhom : '';
-        const statusValue = selectedTicket.status ? selectedTicket.status : '';
-
-        let isDisabled = true;
-        if (tickets && tickets.length > 0) {
-            isDisabled = !isDisabled;
-        }
-
-        const createDelButton = (id) => {
-            return <RaisedButton
-                style={{
-                    marginTop: 'auto'
-                }}
-                label="Delete"
-                primary={true}
-                onClick={() => {
-                    this.handleDelete(id)
-                }}
-            />
-        };
+        const {number = '', name = '', toWhom = [], fromWhom = [], status = [], openSnack, selectedTicket} = this.state;
 
         const toWhomEditor = toWhom.length > 0 ? <AutoCompleteEditor options={toWhom}/> : '';
         const fromWhomEditor = fromWhom.length > 0 ? <AutoCompleteEditor options={fromWhom}/> : '';
@@ -249,61 +202,62 @@ class App extends React.Component {
         const columns = [
             {
                 key: 'number',
-                name: 'Number',
+                name: 'Номер',
                 width: 80
             },
             {
                 key: 'name',
-                name: 'Name',
+                name: 'Наименование',
                 editable: true
             },
             {
                 key: 'toWhom',
-                name: 'To Whom',
+                name: 'Кому',
                 editor: toWhomEditor
             },
             {
                 key: 'fromWhom',
-                name: 'From Whom',
+                name: 'От кого',
                 editor: fromWhomEditor
             },
             {
                 key: 'status',
-                name: 'Status',
+                name: 'Статус',
                 editor: statusEditor
             },
             {
-                name: 'Actions',
+                name: 'Действие',
                 key: 'delete',
                 getRowMetaData: (row) => row,
                 formatter: ({dependentValues}) => (
                     <span>
-          <a href="javascript:;" onClick={() => this.handleDelete(dependentValues.number)}>Delete</a>
+          <a href="javascript:;" onClick={() => this.handleDelete(dependentValues.number)}>Удалить</a>
         </span>
                 ),
             }
 
         ];
 
-        /*let rows = [];
-
-         this.state.tickets.forEach((item) => {
-         const keys = Object.keys(item);
-         let columns = keys.map((row, index) => {
-         return {value: item[row]}
-         });
-         return rows.push({columns: columns})
-         });*/
-
         return (
             <div style={{
+                display: "flex",
+                position: 'relative',
+                zIndex: 5,
+                height: '100%',
+                background: 'rgb(218, 222, 223)',
+                paddingBottom: '78px',
+                boxSizing: 'border-box',
+                flexDirection: 'column',
                 padding: '50px 25px 20px',
-                alignItems: 'center',
-                display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
             }}>
+                <Paper style={{
+                    position: 'relative', top: -30, height: '100%', zIndex: 1, padding: '0',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center'
+                }}>
                 <span style={{fontFamily: 'Roboto', fontSize: '200%'}}>Заявка</span>
                 <div style={{
-                    display: 'flex', flexDirection: 'row', justifyContent: 'space-between'
+                    display: 'flex', flexDirection: 'row', justifyContent: 'space-between',
+                    padding: '50px 25px 20px', position: 'relative', alignSelf: 'normal'
                 }}>
                     <TextField
                         style={{
@@ -362,55 +316,25 @@ class App extends React.Component {
                         floatingLabelText="Статус"
                         onChange={this.handleChange}
                     />
-                    {/*<div style={{
-                        display: 'flex', flexDirection: 'row', justifyContent: 'space-between',
-                        marginTop: 25
-                    }}>
-                        <div style={{
-                            display: 'flex', flexDirection: 'column', marginRight: 50
-                        }}>Кому
-                            <AutoCompleteEditor value={toWhomValue} options={toWhom}/>
-                        </div>
-                        <div style={{
-                            display: 'flex', flexDirection: 'column', marginRight: 50
-                        }}>От кого
-                            <AutoCompleteEditor value={fromWhomValue} options={fromWhom}/>
-                        </div>
-                        <div style={{
-                            display: 'flex', flexDirection: 'column', marginRight: 50
-                        }}>Статус
-                            <AutoCompleteEditor value={statusValue} options={status}/>
-                        </div>
-                    </div>*/}
-                    {/*<div style={{
-                        marginTop: 44
-                    }}>*/}
-                        <RaisedButton
-                            style={{
-                                marginTop: 'auto'
-                            }}
-                            label="Очистить"
-                            primary={true}
-                            onClick={this.handleClear}
-                        />
-                    {/*</div>*/}
-
-                    {/*<RaisedButton
-                     style={{
-                     //marginTop: 'auto'
-                     }}
-                     label="Save"
-                     primary={true}
-                     onClick={this.handleSave}
-                     />*/}
+                    <RaisedButton
+                        style={{
+                            marginTop: 'auto'
+                        }}
+                        label="Очистить"
+                        primary={true}
+                        onClick={this.handleClear}
+                    />
                 </div>
-
-
+                </Paper>
+                <Paper style={{
+                    position: 'relative', height: '100%', zIndex: 1, padding: '0',
+                    display: 'flex', flexDirection: 'column',
+                }}>
                 <div style={{
-                    height: 500,
-                    //overflowY: 'auto',
-                    display: 'flex',
-                    marginTop: 50
+                    padding: '50px 25px 20px',
+                    alignItems: 'center',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                    position: 'relative'
                 }}
                 >
                     <ReactDataGrid
@@ -418,63 +342,16 @@ class App extends React.Component {
                         columns={columns}
                         rowGetter={this.rowGetter}
                         rowsCount={this.state.tickets.length}
-                        minWidth={1024}
+                        //minWidth={1024}
                         minHeight={500}
                         onGridRowsUpdated={this.handleGridRowsUpdated}
                         onRowSelect={this.handleCellClick}
                         onRowClick={this.handleCellClick}
-                        toolbar={<Toolbar onAddRow={this.handleSave}/>}
+                        toolbar={<Toolbar addRowButtonText='Добавить строку' onAddRow={this.handleSave}/>}
                     />
 
-                    {/*<Table
-                     selectable={true}
-                     onCellClick={this.handleCellClick}>
-                     <TableHeader
-                     displaySelectAll={false}
-                     adjustForCheckbox={false}
-                     >
-                     <TableRow>
-                     <TableHeaderColumn colSpan="6" tooltip="Список заявок"
-                     style={{textAlign: 'center', fontSize: '150%'}}>
-                     Список заявок
-                     </TableHeaderColumn>
-                     </TableRow>
-                     <TableRow>
-                     <TableHeaderColumn>Number</TableHeaderColumn>
-                     <TableHeaderColumn>Name</TableHeaderColumn>
-                     <TableHeaderColumn>To Whom</TableHeaderColumn>
-                     <TableHeaderColumn>From Whom</TableHeaderColumn>
-                     <TableHeaderColumn>Status</TableHeaderColumn>
-                     </TableRow>
-                     </TableHeader>
-                     <TableBody displayRowCheckbox={false} deselectOnClickaway={false}>
-                     {this.state.tickets.map((row, index) => (
-                     <TableRow key={index}>
-                     <TableRowColumn key={index} style={{display: 'none'}}
-                     data-my-row-identifier={row.id}>{row.id}</TableRowColumn>
-                     <TableRowColumn key={index}
-                     data-my-row-identifier={row.id}>{row.number}</TableRowColumn>
-                     <TableRowColumn key={index}
-                     data-my-row-identifier={row.id}>{row.name}</TableRowColumn>
-                     <TableRowColumn key={index}
-                     data-my-row-identifier={row.id}>{Object.keys(row.toWhom).map((key) => {
-                     return row.toWhom[key]
-                     })}</TableRowColumn>
-                     <TableRowColumn key={index}
-                     data-my-row-identifier={row.id}>{Object.keys(row.fromWhom).map((key) => {
-                     return row.fromWhom[key]
-                     })}</TableRowColumn>
-                     <TableRowColumn key={index}
-                     data-my-row-identifier={row.id}>{Object.keys(row.status).map((key) => {
-                     return row.status[key]
-                     })}</TableRowColumn>
-
-                     <TableRowColumn>{createDelButton(row.id)}</TableRowColumn>
-                     </TableRow>
-                     ))}
-                     </TableBody>
-                     </Table>*/}
                 </div>
+                </Paper>
                 <Snackbar
                     open={openSnack}
                     message={this.state.text}
